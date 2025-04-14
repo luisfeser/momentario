@@ -28,4 +28,7 @@ class PhotoProcessor(MediaProcessor):
         # Copy the file preserving metadata
         shutil.copy2(source_path, dest_path)
         
+        # Set file dates based on extracted date
+        self._set_file_dates(dest_path, date)
+        
         return dest_path

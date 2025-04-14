@@ -56,4 +56,8 @@ class VideoProcessor(MediaProcessor):
         )
         
         ffmpeg.run(stream, overwrite_output=True)
+        
+        # Set file dates based on extracted date
+        self._set_file_dates(dest_path, date)
+        
         return dest_path

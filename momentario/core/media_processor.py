@@ -1,6 +1,7 @@
 """Core media processing functionality."""
 from abc import ABC, abstractmethod
 from datetime import datetime
+import os
 from pathlib import Path
 from typing import Optional, Protocol
 
@@ -29,3 +30,14 @@ class MediaProcessor(ABC):
             return dest_base_path / "SIN_FECHA" / source_path.name
             
         return dest_base_path / str(date.year) / f"{date.month:02d}" / source_path.name
+
+    def _set_file_dates(self, file_path: Path, date: Optional[datetime]) -> None:
+        """Set file creation and modification dates.
+        
+        Args:
+            file_path: Path to the file to modify
+            date: Date to set for the file. If None, dates are not modified.
+        """
+        if date:
+            timestamp = date.timestamp()
+            os.utime(file_path, (timestamp, timestamp))

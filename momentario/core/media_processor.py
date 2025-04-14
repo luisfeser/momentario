@@ -18,7 +18,7 @@ class MediaProcessor(ABC):
         self.date_extractor = date_extractor
         
     @abstractmethod
-    async def process(self, source_path: Path, dest_base_path: Path) -> Path:
+    def process(self, source_path: Path, dest_base_path: Path) -> Path:
         """Process a media file and return the destination path."""
         pass
     

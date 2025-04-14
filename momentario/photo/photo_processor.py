@@ -8,7 +8,7 @@ from ..core.media_processor import MediaProcessor, DateExtractor
 class PhotoProcessor(MediaProcessor):
     """Processor for photo files."""
     
-    async def process(self, source_path: Path, dest_base_path: Path) -> Path:
+    def process(self, source_path: Path, dest_base_path: Path) -> Path:
         """
         Process a photo file by copying it to the appropriate destination.
         

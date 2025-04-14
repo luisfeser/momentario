@@ -1,4 +1,5 @@
 """Video processing functionality."""
+import multiprocessing
 import shutil
 from pathlib import Path
 
@@ -13,7 +14,7 @@ class VideoProcessor(MediaProcessor):
         super().__init__(date_extractor)
         self.original_videos_path = original_videos_path
         
-    async def process(self, source_path: Path, dest_base_path: Path) -> Path:
+    def process(self, source_path: Path, dest_base_path: Path) -> Path:
         """
         Process a video file by:
         1. Backing up original to original_videos_path
@@ -42,14 +43,14 @@ class VideoProcessor(MediaProcessor):
         stream = ffmpeg.output(
             stream,
             str(dest_path),
-            vcodec='libaom-av1',
-            crf=30,  # Reasonable quality-size trade-off
-            cpu_used=4,  # Speed preset (0-8, higher = faster)
-            row_mt=1,  # Enable row-based multithreading
-            tiles='2x2',  # Tile columns x rows
-            acodec='libopus',  # Modern audio codec
-            **{'threads': 0}  # Use all available threads
+            **{
+                'c:v': 'libsvtav1',  # Video codec
+                'crf': '30',  # Quality (lower = better)
+                'preset': '4',  # Speed preset (0-8, higher = faster)
+                'threads': str(multiprocessing.cpu_count()),  # Use all available threads
+                'c:a': 'libopus'  # Audio codec
+            }
         )
         
-        await ffmpeg.run_async(stream, overwrite_output=True)
+        ffmpeg.run(stream, overwrite_output=True)
         return dest_path

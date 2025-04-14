@@ -1,5 +1,4 @@
 """Command line interface for Momentario."""
-import asyncio
 import mimetypes
 from pathlib import Path
 from typing import List
@@ -9,7 +8,7 @@ from .photo.photo_processor import PhotoProcessor
 from .utils.date_extractor import MediaDateExtractor
 from .video.video_processor import VideoProcessor
 
-async def process_media_files(
+def process_media_files(
     source_dir: Path,
     dest_dir: Path,
     original_videos_dir: Path
@@ -29,9 +28,9 @@ async def process_media_files(
             
         try:
             if mime_type.startswith('image/'):
-                await photo_processor.process(file, dest_dir)
+                photo_processor.process(file, dest_dir)
             elif mime_type.startswith('video/'):
-                await video_processor.process(file, dest_dir)
+                video_processor.process(file, dest_dir)
         except Exception as e:
             print(f"Error processing {file}: {e}")
 
@@ -70,11 +69,11 @@ def main() -> None:
     args.original_videos_dir.mkdir(parents=True, exist_ok=True)
     
     # Run the processor
-    asyncio.run(process_media_files(
+    process_media_files(
         args.source_dir,
         args.dest_dir,
         args.original_videos_dir
-    ))
+    )
 
 if __name__ == '__main__':
     main()

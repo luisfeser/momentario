@@ -44,6 +44,7 @@ class VideoProcessor(MediaProcessor):
             stream,
             str(dest_path),
             **{
+                'map_metadata': '0',
                 'c:v': 'libsvtav1',  # Video codec
                 'crf': '38',  # Quality (lower = better)
                 'preset': '6',  # Speed preset (0-8, higher = faster)

@@ -45,10 +45,12 @@ class VideoProcessor(MediaProcessor):
             str(dest_path),
             **{
                 'c:v': 'libsvtav1',  # Video codec
-                'crf': '30',  # Quality (lower = better)
-                'preset': '4',  # Speed preset (0-8, higher = faster)
+                'crf': '38',  # Quality (lower = better)
+                'preset': '6',  # Speed preset (0-8, higher = faster)
                 'threads': str(multiprocessing.cpu_count()),  # Use all available threads
-                'c:a': 'libopus'  # Audio codec
+                'pix_fmt': 'yuv420p',
+                'c:a': 'copy',  # copy audio codec
+                'movflags': '+faststart'    
             }
         )
         

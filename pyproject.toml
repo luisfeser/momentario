@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "momentario"
+version = "0.1.0"
+description = "Organizador de fotos y videos con soporte para metadatos y conversión AV1"
+authors = ["Luis-Felipe Sánchez-Escobar Retamar <felipe.retama@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Pillow = "^11.2.1"
+exifread = "^3.0.0"
+ffmpeg-python = "^0.2.0"
+python-dateutil = "^2.9.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-asyncio = "^0.26.0"
+pytest-cov = "^6.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

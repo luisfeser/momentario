@@ -1,0 +1,80 @@
+Python 3
+- Usar Python 3.9+ para aprovechar características modernas como type hints
+- Utilizar f-strings para formateo de cadenas
+- Aprovechar funciones asíncronas con async/await para operaciones de I/O
+- Usar pathlib en lugar de os.path para manipulación de rutas
+
+Principios SOLID
+- S (Responsabilidad Única): Cada clase debe tener una sola responsabilidad
+- O (Abierto/Cerrado): Extensible sin modificar código existente
+- L (Sustitución de Liskov): Las subclases deben ser sustituibles por sus clases base
+- I (Segregación de Interfaces): Interfaces específicas mejor que una general
+- D (Inversión de Dependencias): Depender de abstracciones, no de implementaciones concretas
+
+TDD (Test-Driven Development)
+- Escribir tests antes que el código (Red-Green-Refactor)
+- Usar pytest como framework de testing
+- Organizar tests por módulos/clases (test_exif_processor.py)
+- Implementar tests unitarios, de integración y funcionales
+- Usar fixtures y mocks para aislar componentes
+- Mantener cobertura de código >80%
+
+Estructura de código
+- Organización por paquetes/módulos funcionales:
+app/
+  ├── core/
+  ├── exif/
+  ├── video/
+  ├── utils/
+  └── tests/
+- Seguir PEP 8 para convenciones de estilo
+- Usar type hints consistentemente
+- Documentar con docstrings (Google style)
+- Nombrar snake_case para funciones/variables, CamelCase para clases
+
+Patrones de diseño
+- Factory para crear procesadores de imagen/video
+- Strategy para algoritmos de procesamiento
+- Command para operaciones de edición
+- Observer para notificación de progreso
+- Repository para abstracción de acceso a datos
+- Dependency Injection para acoplar componentes débilmente
+
+Tratamiento de fotos con EXIF
+- Usar la biblioteca Pillow para manipulación de imágenes
+- exifread o piexif para leer/escribir metadatos EXIF
+- Abstraer lógica EXIF en clases dedicadas:
+class ExifReader:
+    def read_metadata(self, image_path: Path) -> dict: ...
+
+class ExifProcessor:
+    def __init__(self, reader: ExifReader): ...
+    def process(self, image_path: Path) -> dict: ...
+
+- Implementar caching para metadatos frecuentes
+
+Conversión de videos con FFmpeg
+- Usar python-ffmpeg o ffmpeg-python como wrapper
+- Abstraer operaciones de vídeo:
+class VideoConverter:
+    def __init__(self, ffmpeg_path: Optional[Path] = None): ...
+    def convert(self, input_path: Path, output_path: Path, options: Dict): ...
+
+- Implementar manejo de progreso asíncrono
+- Patrones de observador para notificaciones de progreso
+
+Gestión de errores
+- Crear jerarquía de excepciones personalizadas
+- Logging estructurado con niveles adecuados
+- Manejo consistente de errores de entrada/salida
+
+Configuración
+- Usar archivos de configuración (YAML/TOML)
+- Variables de entorno para configuración sensible
+- Inyección de dependencias para configuración
+
+Implementación práctica
+- Comenzar con interfaces de clase (ABC)
+- Desarrollar tests primero
+- Implementar módulo por módulo (core → utils → exif → video)
+- Refactorizar tempranamente

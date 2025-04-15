@@ -120,4 +120,16 @@ class VideoProcessor(MediaProcessor):
         # Set file dates based on extracted date
         self._set_file_dates(dest_path, date)
 
+        # Eliminar _h265_AV1 en destino si existe
+        h265_av1_name = f"{base_name}_h265_AV1{suffix}"
+        h265_av1_path = self._get_destination_path(Path(h265_av1_name), dest_base_path, date)
+        if h265_av1_path.exists():
+            h265_av1_path.unlink()
+
+        # Eliminar _h265 en carpeta de originales si existe
+        h265_name = f"{base_name}_h265{suffix}"
+        h265_path = self.original_videos_path / h265_name
+        if h265_path.exists():
+            h265_path.unlink()
+
         return dest_path

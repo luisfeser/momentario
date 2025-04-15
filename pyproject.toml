@@ -3,6 +3,7 @@ name = "momentario"
 version = "0.1.0"
 description = "Organizador de fotos y videos con soporte para metadatos y conversión AV1"
 authors = ["Luis-Felipe Sánchez-Escobar Retamar <felipe.retama@gmail.com>"]
+packages = [{include = "momentario"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"

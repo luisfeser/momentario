@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Poetry
+dist/
+*.egg-info/
+
+# Tests
+tests/
+pruebas/
+
+# IDE
+.idea/
+.vscode/
+
+# Archivos de medios
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.mov
+*.avi

@@ -40,3 +40,6 @@ poetry.lock
 *.gif
 *.mov
 *.avi
+
+# Pruebas
+/pruebas/

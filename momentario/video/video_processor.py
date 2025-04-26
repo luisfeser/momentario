@@ -3,10 +3,30 @@ import multiprocessing
 import shutil
 from datetime import datetime
 from pathlib import Path
+import subprocess
 
 import ffmpeg
 
 from ..core.media_processor import MediaProcessor
+
+
+def get_video_duration(path: Path) -> float:
+    """Return duration in seconds, or None if error."""
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe", "-v", "error", "-show_entries",
+                "format=duration", "-of",
+                "default=noprint_wrappers=1:nokey=1", str(path)
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        return float(result.stdout.strip())
+    except Exception:
+        return None
 
 class VideoProcessor(MediaProcessor):
     """Processor for video files with AV1 conversion."""
@@ -80,10 +100,17 @@ class VideoProcessor(MediaProcessor):
         if not name.endswith('_h265'):
             av1_path = self._find_av1_version(base_name, dest_base_path, date)
             if av1_path and av1_path.exists():
-                # Ya existe versión AV1, mover original a backup
-                shutil.move(source_path, backup_path)
-                self._set_file_dates(backup_path, date)
-                return av1_path
+                # Validate duration before accepting AV1
+                orig_duration = get_video_duration(source_path)
+                av1_duration = get_video_duration(av1_path)
+                # Tolerance of 0.5 seconds
+                if orig_duration and av1_duration and abs(orig_duration - av1_duration) < 0.5:
+                    shutil.move(source_path, backup_path)
+                    self._set_file_dates(backup_path, date)
+                    return av1_path
+                else:
+                    # AV1 is corrupt or incomplete, remove and force reconversion
+                    av1_path.unlink()
 
         # Caso 3: Archivo _h265
         if name.endswith('_h265'):
@@ -141,7 +168,15 @@ class VideoProcessor(MediaProcessor):
         # Si la conversión fue exitosa y el archivo temporal existe, renómbralo
         if tmp_dest_path.exists():
             tmp_dest_path.rename(dest_path)
-            shutil.move(source_path, backup_path)
+            # Validate duration before accepting AV1
+            orig_duration = get_video_duration(source_path)
+            av1_duration = get_video_duration(dest_path)
+            if orig_duration and av1_duration and abs(orig_duration - av1_duration) < 0.5:
+                shutil.move(source_path, backup_path)
+            else:
+                print("Duration mismatch after conversion, AV1 file is invalid.")
+                dest_path.unlink()
+                return
         else:
             print(f"La conversión no generó el archivo AV1 esperado: {tmp_dest_path}")
             return

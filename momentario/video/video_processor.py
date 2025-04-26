@@ -95,8 +95,10 @@ class VideoProcessor(MediaProcessor):
         dest_path = self._get_destination_path(Path(dest_name), dest_base_path, date)
         dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Move original to backup
-        shutil.move(source_path, backup_path)
+        # Usar archivo temporal para evitar AV1 corruptos
+        tmp_dest_path = dest_path.with_suffix(dest_path.suffix + '.tmp')
+        if tmp_dest_path.exists():
+            tmp_dest_path.unlink()
 
         # Eliminar _h265_AV1 en destino si existe
         h265_av1_name = f"{base_name}_h265_AV1{suffix}"
@@ -110,11 +112,12 @@ class VideoProcessor(MediaProcessor):
         if h265_path.exists():
             h265_path.unlink()
 
-        # Convert to AV1
-        stream = ffmpeg.input(str(backup_path))
+        # Convertir a AV1 en archivo temporal
+        stream = ffmpeg.input(str(source_path))
         stream = ffmpeg.output(
             stream,
-            str(dest_path),
+            str(tmp_dest_path),
+            format='mp4',
             **{
                 'map_metadata': '0',
                 'c:v': 'libsvtav1',  # Video codec
@@ -127,7 +130,21 @@ class VideoProcessor(MediaProcessor):
             }
         )
 
-        ffmpeg.run(stream, overwrite_output=True)
+        try:
+            ffmpeg.run(stream, overwrite_output=True)
+        except Exception as e:
+            print(f"Error en la conversión AV1: {e}")
+            if tmp_dest_path.exists():
+                tmp_dest_path.unlink()
+            return
+
+        # Si la conversión fue exitosa y el archivo temporal existe, renómbralo
+        if tmp_dest_path.exists():
+            tmp_dest_path.rename(dest_path)
+            shutil.move(source_path, backup_path)
+        else:
+            print(f"La conversión no generó el archivo AV1 esperado: {tmp_dest_path}")
+            return
 
         # Set file dates based on extracted date
         self._set_file_dates(dest_path, date)

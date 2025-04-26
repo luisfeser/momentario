@@ -1,26 +1,26 @@
-#!/usr/bin/env bash
-set -euxo pipefail
+#!/bin/sh
+set -eu
 
-# Require PUID and PGID
+# Variables obligatorias
 : "${PUID:?PUID environment variable is required}"
 : "${PGID:?PGID environment variable is required}"
 
-# Create or update group 'users' to match PGID
+# Asegura que el grupo 'users' existe con el PGID correcto
 if getent group users >/dev/null; then
   groupmod -g "${PGID}" users
 else
   groupadd -g "${PGID}" users
 fi
 
-# Create or update user 'appuser' with dynamic UID/GID
+# Asegura que el usuario 'appuser' existe con PUID/PGID
 if id appuser >/dev/null 2>&1; then
-  usermod -u "${PUID}" --gid "${PGID}" appuser
+  usermod -u "${PUID}" -g "${PGID}" appuser
 else
-  useradd --uid "${PUID}" --gid "${PGID}" --create-home --shell /usr/sbin/nologin appuser
+  useradd -u "${PUID}" -g "${PGID}" -M -s /usr/sbin/nologin appuser
 fi
 
-# Adjust ownership of mounted data directories
+# Cambia dueño de los directorios montados
 chown -R "${PUID}:${PGID}" /data/origen /data/destino /data/videos_originales
 
-# Drop privileges and execute the application
-exec gosu appuser "$@"
+# Ejecuta la app como 'appuser'
+exec gosu appuser python3 -m momentario.cli "$@"

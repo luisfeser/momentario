@@ -1,39 +1,35 @@
-# Dockerfile
 FROM python:3.12-slim
 
-# Build-time argument for host group ID (users)
+# Variables de entorno
 ARG PGID=100
 ENV PGID=${PGID}
 
-# Install system dependencies, bash and gosu for privilege dropping
+# Instala dependencias del sistema y herramientas necesarias
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg bash gosu \
+    && apt-get install -y --no-install-recommends ffmpeg gosu \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Ensure group 'users' exists with the specified GID
-RUN if ! getent group users >/dev/null; then \
-      groupadd -g "${PGID}" users; \
-    fi
+# Instala Poetry solo para instalar dependencias
+RUN pip install --no-cache-dir poetry \
+    && poetry config virtualenvs.create false
 
-# Set working directory
 WORKDIR /app
 
-# Copy project files and install Python dependencies (including the project)
+# Copia solo los archivos de dependencias primero para aprovechar el cache
 COPY pyproject.toml poetry.lock ./
-COPY momentario ./momentario
-RUN pip install poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi \
-    && pip uninstall -y poetry \
-    && rm -rf ~/.cache/pypoetry
 
-# Copy and make entrypoint executable
+# Instala dependencias del proyecto (sin dev)
+RUN poetry install --no-interaction --no-ansi --no-root \
+    && pip uninstall -y poetry \
+    && rm -rf /root/.cache/pip /root/.cache/pypoetry /root/.cache/build /tmp/*
+
+# Copia el código fuente
+COPY momentario ./momentario
+
+# Copia el entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Keep root user to adjust permissions at runtime
-USER root
-
-# Entrypoint and default command
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["python3", "-m", "momentario.cli", "/data/origen", "/data/destino", "/data/videos_originales"]
+CMD ["/data/origen", "/data/destino", "/data/videos_originales"]
